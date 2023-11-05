@@ -2,6 +2,7 @@ import os
 import time
 from urllib.parse import urlparse
 
+import cv2
 import keras_ocr
 from matplotlib import pyplot as plt
 from selenium import webdriver
@@ -53,20 +54,14 @@ def generate_image_name(url):
 
 def get_text_from_img():
     pipeline = keras_ocr.pipeline.Pipeline()
-    images = [
-        keras_ocr.tools.read(img) for img in [
-            "Temp/25-homepage-logos.png",
-            "Temp/fylehq.png",
-            "Temp/plumhq.png",
-        ]
-    ]
+    image = cv2.imread('Temp/25-homepage-logos.png')
 
+    images = [image]
     prediction_groups = pipeline.recognize(images)
 
-    # Plot the predictions
-    fig, axs = plt.subplots(nrows=len(images), figsize=(20, 20))
-    for ax, image, predictions in zip(axs, images, prediction_groups):
-        keras_ocr.tools.drawAnnotations(image=image, predictions=predictions, ax=ax)
+    print(f"{prediction_groups}")
+
+    return prediction_groups
 
 
 if __name__ == "__main__":
