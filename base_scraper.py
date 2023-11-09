@@ -3,6 +3,7 @@ import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium_stealth import stealth
+from market_info import MarketInfo
 
 
 class BaseScraper:
@@ -50,20 +51,24 @@ class BaseScraper:
 
         return scrape_data
 
+    def get_specifics(self, url, values_to_scrape):
+        driver = self.get_webdriver()
+        driver.get(url)
 
-def get_market_share(scrape_data, company):
-    if scrape_data:
-        share = scrape_data[-1]
-        print(f"market-share for {company}: " + str(share))
+        page_source = driver.execute_script('return document.documentElement.outerHTML')
 
-        return share
-    else:
-        print("No data")
+        soup = BeautifulSoup(page_source, 'html.parser')
+
+        # using specific class here
+        for k in values_to_scrape:
+            relevant_values = soup.find_all(values_to_scrape[k], {'class': f"{k}"})
+            print(relevant_values)
 
 
 if __name__ == '__main__':
     start = time.time()
     scraper = BaseScraper()
+    market_info = MarketInfo()
     urls = ['payment-processing--26/razorpay-market-share', 'other-accounting-and-finance-software--256/mangopay'
                                                             '-market-share']
 
@@ -71,7 +76,7 @@ if __name__ == '__main__':
         company_name = re.search(r'\/(.*?)-', specific_url).group(1)
         market_share = scraper.scrape_site_for_specific_tag(f'https://www.datanyze.com/market-share/{specific_url}',
                                                             'h4', classname='ms-description')
-        get_market_share(market_share, company_name)
+        market_info.get_market_share(market_share, company_name)
 
     end = time.time()
     print(str(end - start) + " s")
